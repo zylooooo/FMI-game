@@ -73,7 +73,7 @@ io.on('connection', (socket) => {
   on<HostAction>(socket, 'host:action', (a) => asHost(() => commit(hostAction(state, a, Date.now()))));
   on<number>(socket, 'group:join', (n) => {
     const token = crypto.randomUUID();
-    return commit(rememberToken(join(state, n, token), token));
+    return commit(rememberToken(join(state, n, token, connectedSet()), token));
   });
   on<string>(socket, 'group:resume', (token) => commit(rememberToken(resume(state, token), token)));
   on(socket, 'group:allocate', (h: Parameters<typeof allocate>[2]) => commit(allocate(state, socket.data.token, h)));

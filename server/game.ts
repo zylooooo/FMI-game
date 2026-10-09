@@ -16,19 +16,24 @@ export function newGame(): GameState {
 const byToken = (s: GameState, token: string) =>
   typeof token === 'string' && token ? s.groups.find((g) => g.token === token) : undefined;
 
-export function join(s: GameState, number: unknown, token: string): Ack {
+/**
+ * `online` = group numbers with a device currently connected. An existing group with no device
+ * online can be taken over by a new device (e.g. the tab was closed), inheriting its progress;
+ * the old token stops working.
+ */
+export function join(s: GameState, number: unknown, token: string, online: ReadonlySet<number>): Ack {
   if (typeof number !== 'number' || !Number.isInteger(number) || number < 1 || number > 7) {
     return fail('Enter a whole number from 1 to 7');
   }
   const existing = s.groups.find((g) => g.number === number);
-  if (s.phase === 'lobby') {
-    if (existing) return fail(`Group ${number} is already taken`);
+  if (existing) {
+    if (existing.token !== null && online.has(number)) return fail(`Group ${number} is already taken`);
+    existing.token = token;
+  } else {
+    if (s.phase !== 'lobby') return fail('The game has already started');
     if (s.groups.length >= MAX_GROUPS) return fail('The game is full');
     s.groups.push({ number, token, holdings: null, answer: null, bonusAsset: null });
     s.groups.sort((a, b) => a.number - b.number);
-  } else {
-    if (!existing || existing.token !== null) return fail('The game has already started');
-    existing.token = token;
   }
   return { ok: true, token, number };
 }

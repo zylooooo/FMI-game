@@ -16,7 +16,7 @@ A multiplayer classroom game that teaches how economic events affect cash, stock
 | Slow bonus choice | Host may reveal the chart anyway; any unchosen bonus goes 100% into cash. |
 | Slow allocation | Host may reveal Event 1 anyway; a group with no allocation gets ₩1,000 cash. |
 | Late join | Joining is closed once the host clicks "Start game". |
-| Lost device | Host can "Release Group X"; a new device can then claim X and inherits its holdings. |
+| Lost device / closed tab | Any device can rejoin by typing group number X if no device is currently connected as X (or the host released X); it inherits X's holdings and the old device's token stops working. Same browser + same URL resumes automatically. |
 | Answer lock | Group selects an option, then presses "Lock in". No changes after lock-in. |
 | Rounding | Every holding is rounded to the nearest ₩ (`Math.round`) after each round's % effect. Stored values are always integers. |
 | Group's own view | Group sees its own per-asset breakdown and total. Host ranking shows totals only. |
@@ -95,7 +95,7 @@ Question and option text copied verbatim from the PRD. No explanations. The corr
 
 ### 4.4 Group actions
 
-- `join(number)`: integer 1–7. In lobby: rejected if X already exists or 6 groups exist. After lobby: allowed only if group X exists with `token === null` (released); otherwise rejected ("joining closed" / "taken"). Returns token; client stores it in localStorage.
+- `join(number)`: integer 1–7. If group X exists: rejected ("taken") only while a device is connected as X and X is not released; otherwise the new device takes X over (new token, old token invalid). If X does not exist: allowed only in lobby with < 6 groups ("The game has already started" / "The game is full"). Returns token; client stores it in localStorage.
 - `resume(token)`: reattaches socket to its group.
 - `allocate({cash, stocks, bonds})`: phase `allocating`, each a non-negative multiple of 10, sum exactly 1000. Can be resubmitted until Event 1 is revealed.
 - `answer(index)`: phase `question`, `now ≤ deadline + 500ms` grace, only once.

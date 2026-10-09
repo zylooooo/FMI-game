@@ -16,39 +16,54 @@ function toQuestion(s: GameState, now = 0) {
 
 test('join validation', () => {
   const s = newGame();
-  for (const bad of [0, 8, 2.5, '3']) err(join(s, bad, 't'), 'Enter a whole number from 1 to 7');
-  ok(join(s, 1, 'a'));
-  err(join(s, 1, 'b'), 'Group 1 is already taken');
-  for (const n of [2, 3, 4, 5, 6]) ok(join(s, n, 't' + n));
-  err(join(s, 7, 'x'), 'The game is full');
+  for (const bad of [0, 8, 2.5, '3']) err(join(s, bad, 't', new Set()), 'Enter a whole number from 1 to 7');
+  ok(join(s, 1, 'a', new Set()));
+  err(join(s, 1, 'b', new Set([1])), 'Group 1 is already taken');
+  for (const n of [2, 3, 4, 5, 6]) ok(join(s, n, 't' + n, new Set()));
+  err(join(s, 7, 'x', new Set()), 'The game is full');
   assert.deepEqual(s.groups.map((g) => g.number), [1, 2, 3, 4, 5, 6]);
 });
 
 test('join keeps groups sorted', () => {
   const s = newGame();
-  join(s, 5, 'a');
-  join(s, 2, 'b');
+  join(s, 5, 'a', new Set());
+  join(s, 2, 'b', new Set());
   assert.deepEqual(s.groups.map((g) => g.number), [2, 5]);
 });
 
-test('join after start only for released group, inheriting holdings', () => {
+test('join after start only for an existing group, inheriting holdings', () => {
   const s = newGame();
-  join(s, 1, 'a');
-  join(s, 2, 'b');
+  join(s, 1, 'a', new Set());
+  join(s, 2, 'b', new Set());
   ok(host(s, 'start'));
-  err(join(s, 3, 'c'), 'The game has already started');
-  err(join(s, 1, 'c'), 'The game has already started');
+  err(join(s, 3, 'c', new Set()), 'The game has already started');
+  err(join(s, 1, 'c', new Set([1])), 'Group 1 is already taken');
   ok(allocate(s, 'a', { cash: 100, stocks: 400, bonds: 500 }));
   ok(hostAction(s, { type: 'release', number: 1 }, 0));
   err(resume(s, 'a'), 'Not joined');
-  ok(join(s, 1, 'new'));
+  ok(join(s, 1, 'new', new Set()));
   assert.deepEqual(s.groups[0].holdings, { cash: 100, stocks: 400, bonds: 500 });
   assert.deepEqual(resume(s, 'new'), { ok: true, number: 1 });
 });
 
+test('device can take over a group with no device online, mid-game or in lobby', () => {
+  const s = newGame();
+  join(s, 1, 'a', new Set());
+  ok(join(s, 1, 'lobby-retry', new Set())); // tab closed in lobby
+  err(resume(s, 'a'), 'Not joined');
+  ok(host(s, 'start'));
+  ok(allocate(s, 'lobby-retry', { cash: 300, stocks: 500, bonds: 200 }));
+  err(join(s, 1, 'thief', new Set([1])), 'Group 1 is already taken'); // still online: blocked
+  ok(join(s, 1, 'reopened', new Set())); // tab closed mid-game: rejoin by number
+  assert.deepEqual(s.groups[0].holdings, { cash: 300, stocks: 500, bonds: 200 });
+  err(resume(s, 'lobby-retry'), 'Not joined');
+  assert.deepEqual(resume(s, 'reopened'), { ok: true, number: 1 });
+  assert.equal(s.groups.length, 1);
+});
+
 test('release in lobby removes group; unknown group errors', () => {
   const s = newGame();
-  join(s, 1, 'a');
+  join(s, 1, 'a', new Set());
   ok(hostAction(s, { type: 'release', number: 1 }, 0));
   assert.equal(s.groups.length, 0);
   assert.equal(hostAction(s, { type: 'release', number: 1 }, 0).ok, false);
@@ -56,7 +71,7 @@ test('release in lobby removes group; unknown group errors', () => {
 
 test('allocate rules', () => {
   const s = newGame();
-  join(s, 1, 'a');
+  join(s, 1, 'a', new Set());
   err(allocate(s, 'a', { cash: 1000, stocks: 0, bonds: 0 }), 'Not allowed right now');
   host(s, 'start');
   err(allocate(s, 'zz', { cash: 1000, stocks: 0, bonds: 0 }), 'Not joined');
@@ -70,7 +85,7 @@ test('start needs a group; wrong-phase host action rejected', () => {
   assert.equal(host(s, 'start').ok, false);
   err(host(s, 'revealEvent'), 'Not allowed right now');
   err(host(s, 'next'), 'Not allowed right now');
-  join(s, 1, 'a');
+  join(s, 1, 'a', new Set());
   ok(host(s, 'start'));
   err(host(s, 'start'), 'Not allowed right now');
   err(host(s, 'revealChart'), 'Not allowed right now');
@@ -78,8 +93,8 @@ test('start needs a group; wrong-phase host action rejected', () => {
 
 test('happy path, 2 groups, 4 events', () => {
   const s = newGame();
-  join(s, 1, 'a');
-  join(s, 2, 'b');
+  join(s, 1, 'a', new Set());
+  join(s, 2, 'b', new Set());
   ok(host(s, 'start'));
   ok(allocate(s, 'a', { cash: 300, stocks: 500, bonds: 200 }));
   for (let r = 0; r < 4; r++) {
@@ -102,7 +117,7 @@ test('happy path, 2 groups, 4 events', () => {
 
 test('correct group without bonus choice gets +200 cash', () => {
   const s = newGame();
-  join(s, 1, 'a');
+  join(s, 1, 'a', new Set());
   host(s, 'start');
   allocate(s, 'a', { cash: 0, stocks: 1000, bonds: 0 });
   toQuestion(s);
@@ -114,7 +129,7 @@ test('correct group without bonus choice gets +200 cash', () => {
 
 test('wrong answer gets no bonus; bonus only for correct groups', () => {
   const s = newGame();
-  join(s, 1, 'a');
+  join(s, 1, 'a', new Set());
   host(s, 'start');
   allocate(s, 'a', { cash: 1000, stocks: 0, bonds: 0 });
   toQuestion(s);
@@ -127,7 +142,7 @@ test('wrong answer gets no bonus; bonus only for correct groups', () => {
 
 test('bonus asset validated and changeable', () => {
   const s = newGame();
-  join(s, 1, 'a');
+  join(s, 1, 'a', new Set());
   host(s, 'start');
   toQuestion(s);
   answer(s, 'a', 0, 1);
@@ -140,9 +155,9 @@ test('bonus asset validated and changeable', () => {
 
 test('answer timing and locking', () => {
   const s = newGame();
-  join(s, 1, 'a');
-  join(s, 2, 'b');
-  join(s, 3, 'c');
+  join(s, 1, 'a', new Set());
+  join(s, 2, 'b', new Set());
+  join(s, 3, 'c', new Set());
   host(s, 'start');
   toQuestion(s, 0);
   err(answer(s, 'c', 0, QUESTION_MS + GRACE_MS + 1), "Time's up");
@@ -155,8 +170,8 @@ test('answer timing and locking', () => {
 
 test('revealAnswer waits for timer unless all answered', () => {
   const s = newGame();
-  join(s, 1, 'a');
-  join(s, 2, 'b');
+  join(s, 1, 'a', new Set());
+  join(s, 2, 'b', new Set());
   host(s, 'start');
   toQuestion(s, 0);
   answer(s, 'a', 0, 1);
@@ -167,8 +182,8 @@ test('revealAnswer waits for timer unless all answered', () => {
 
 test('revealAnswer waits for the answer grace after the deadline', () => {
   const s = newGame();
-  join(s, 1, 'a');
-  join(s, 2, 'b');
+  join(s, 1, 'a', new Set());
+  join(s, 2, 'b', new Set());
   host(s, 'start');
   toQuestion(s, 0);
   answer(s, 'a', 0, 1);
@@ -179,7 +194,7 @@ test('revealAnswer waits for the answer grace after the deadline', () => {
 
 test('toPublic hides tokens and hides correct during question', () => {
   const s = newGame();
-  join(s, 1, 'secret');
+  join(s, 1, 'secret', new Set());
   host(s, 'start');
   toQuestion(s, 0);
   answer(s, 'secret', 0, 1);
@@ -200,7 +215,7 @@ test('toPublic hides tokens and hides correct during question', () => {
 
 test('next clears previous round answers and bonus from public state', () => {
   const s = newGame();
-  join(s, 1, 'a');
+  join(s, 1, 'a', new Set());
   host(s, 'start');
   toQuestion(s);
   answer(s, 'a', 0, 1);
@@ -215,7 +230,7 @@ test('next clears previous round answers and bonus from public state', () => {
 
 test('reset returns to lobby', () => {
   const s = newGame();
-  join(s, 1, 'a');
+  join(s, 1, 'a', new Set());
   host(s, 'start');
   ok(host(s, 'reset'));
   assert.deepEqual(s, newGame());
