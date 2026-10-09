@@ -10,6 +10,57 @@
   --color-transparent: transparent;
   --font-display: "Anton", sans-serif;
   --font-body: "Space Grotesk", sans-serif;
+
+  --animate-shake: shake 0.4s ease-in-out infinite;
+  --animate-pulse-pink: pulse-pink 1s ease-in-out infinite;
+  --animate-flicker: flicker 0.3s steps(1, end) infinite;
+  --animate-grow-up: grow-up 0.8s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  --animate-pop-in: pop-in 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px) rotate(-1deg); }
+    75% { transform: translateX(5px) rotate(1deg); }
+  }
+  @keyframes pulse-pink {
+    0%, 100% { filter: drop-shadow(0 0 0 var(--color-transparent)); }
+    50% { filter: drop-shadow(0 0 1.25rem var(--color-pink)); }
+  }
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    25% { opacity: 0.25; }
+    50% { opacity: 0.8; }
+    75% { opacity: 0.4; }
+  }
+  @keyframes grow-up {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+  }
+  @keyframes pop-in {
+    0% { transform: scale(0.6); opacity: 0; }
+    70% { transform: scale(1.06); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+  }
 }
+
+/* Diagonal pink/black hazard band. */
+@utility stripes {
+  background-image: repeating-linear-gradient(45deg, var(--color-pink) 0 14px, var(--color-black) 14px 28px);
+}
+/* Rectangle with two opposite corners cut. */
+@utility clip-angle {
+  clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
+}
+@utility clip-hex {
+  clip-path: polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%);
+}
+@utility clip-chevron {
+  clip-path: polygon(0 0, 55% 0, 100% 50%, 55% 100%, 0 100%, 45% 50%);
+}
+
 html, body, #root { height: 100%; }
 body { @apply bg-black text-white font-body; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-shake, .animate-flicker { animation: none; }
+}
