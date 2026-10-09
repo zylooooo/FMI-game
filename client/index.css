@@ -1,0 +1,15 @@
+@import "tailwindcss";
+@theme {
+  --color-*: initial;
+  --color-pink: #ed1b76;
+  --color-pink-light: #f44786;
+  --color-white: #ffffff;
+  --color-teal: #249f9c;
+  --color-teal-dark: #037a76;
+  --color-black: #000000;
+  --color-transparent: transparent;
+  --font-display: "Anton", sans-serif;
+  --font-body: "Space Grotesk", sans-serif;
+}
+html, body, #root { height: 100%; }
+body { @apply bg-black text-white font-body; }
