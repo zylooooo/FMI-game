@@ -1,6 +1,6 @@
 import type { Holdings } from './types.ts';
 
-export interface GameEvent { title: string; question: string; options: string[]; correct: number; effects: Holdings /* % */ }
+export interface GameEvent { title: string; question: string; options: string[]; effects: Holdings /* % */ }
 
 export const EVENTS: GameEvent[] = [
   {
@@ -12,7 +12,6 @@ export const EVENTS: GameEvent[] = [
       'The Kospi falls, because competition for chips increases',
       "Nothing, because Korea doesn't depend on AI",
     ],
-    correct: 0,
     effects: { stocks: 40, bonds: -3, cash: 0 },
   },
   {
@@ -24,14 +23,12 @@ export const EVENTS: GameEvent[] = [
       'Leveraged ETFs cause interest rates to rise',
       'Leveraged ETFs make companies earn less profit',
     ],
-    correct: 1,
     effects: { stocks: -20, bonds: 3, cash: 0 },
   },
   {
     title: 'Domestic interest-rate hike',
     question: 'Rates are rising. What do you do with your Korean government bonds and stocks?',
     options: ['Sell bonds, sell stocks', 'Buy bonds, buy stocks', 'Sell bonds, buy stocks', 'Buy bonds, sell stocks'],
-    correct: 0,
     effects: { stocks: -2, bonds: -3, cash: 0 },
   },
   {
@@ -43,7 +40,6 @@ export const EVENTS: GameEvent[] = [
       'Property prices face downward pressure, while the won strengthens against the US dollar.',
       'Existing bond prices rise, while growth-stock valuations fall.',
     ],
-    correct: 1,
     effects: { stocks: 0, bonds: 0, cash: 0 },
   },
 ];

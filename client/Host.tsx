@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
 import type { HostAction, Phase, PublicGroup, PublicState } from '../shared/types.ts';
 import { EVENTS } from '../shared/events.ts';
-import { podium, rank, total } from '../shared/logic.ts';
+import { GRACE_MS, podium, rank, total } from '../shared/logic.ts';
 import { useGame, useTick } from './socket.ts';
 import { Banner, Button, Countdown, EffectChart, Podium, RankingTable, Shell, Toast, useToast } from './ui.tsx';
 
@@ -37,6 +37,8 @@ export function Host() {
   const [busy, setBusy] = useState(false);
   useTick(250); // keeps "Reveal answer" enablement in step with the deadline
   const suspense = useSuspense(state?.phase === 'answer' ? `answer-${state.round}` : null);
+  // Lock the primary button briefly after every phase change so a double-click can't skip a phase.
+  const settling = useSuspense(state ? `${state.phase}-${state.round}` : null);
 
   // Auto-auth on mount and on every reconnect (the server forgets host sockets on disconnect).
   useEffect(() => onConnect(() => {
@@ -44,8 +46,8 @@ export function Host() {
     if (!stored) return;
     emit('host:auth', stored).then((ack) => {
       if (ack.ok) return setAuthed(true);
-      // A dropped connection says nothing about the PIN; keep it for the next reconnect.
-      if (ack.error === 'Connection problem') return;
+      // A dropped connection says nothing about the PIN; keep it for the next reconnect, but show the gate.
+      if (ack.error === 'Connection problem') return setAuthed((a) => a ?? false);
       localStorage.removeItem(PIN_KEY);
       setAuthed(false);
       show(ack.error);
@@ -117,7 +119,7 @@ export function Host() {
     case 'question':
       primary = {
         label: 'Reveal answer', action: { type: 'revealAnswer' },
-        disabled: !(now() >= (state.deadline ?? 0) || allAnswered),
+        disabled: !(now() >= (state.deadline ?? 0) + GRACE_MS || allAnswered),
         sub: `${count((g) => g.answered)}/${n} locked in`,
       };
       break;
@@ -147,7 +149,7 @@ export function Host() {
       </div>
       {primary && (
         <div className="flex flex-col items-center gap-1">
-          <Button disabled={busy || primary.disabled} onClick={() => act(primary.action)}>{primary.label}</Button>
+          <Button disabled={busy || settling || primary.disabled} onClick={() => act(primary.action)}>{primary.label}</Button>
           <span className="h-5 text-sm font-bold text-white/70" aria-live="polite">{primary.sub}</span>
         </div>
       )}

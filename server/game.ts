@@ -1,6 +1,7 @@
 import { ASSETS } from '../shared/types.ts';
 import type { Ack, Asset, GameState, Group, HostAction, Holdings, Phase, PublicState } from '../shared/types.ts';
 import { EVENTS } from '../shared/events.ts';
+import { CORRECT } from './answers.ts';
 import { GRACE_MS, MAX_GROUPS, QUESTION_MS, START, applyRound, validateAllocation } from '../shared/logic.ts';
 
 const OK: Ack = { ok: true };
@@ -67,7 +68,7 @@ export function answer(s: GameState, token: string, index: unknown, now: number)
 export function chooseBonus(s: GameState, token: string, asset: unknown): Ack {
   const g = inPhase(s, token, 'answer');
   if (isAck(g)) return g;
-  if (g.answer !== EVENTS[s.round].correct) return fail('Only correct groups get a bonus');
+  if (g.answer !== CORRECT[s.round]) return fail('Only correct groups get a bonus');
   if (!ASSETS.includes(asset as Asset)) return fail('Invalid asset');
   g.bonusAsset = asset as Asset;
   return OK;
@@ -94,12 +95,13 @@ export function hostAction(s: GameState, a: HostAction, now: number): Ack {
       return OK;
     case 'revealAnswer':
       if (!need('question')) return fail(WRONG_PHASE);
-      if (!(now >= (s.deadline ?? 0) || s.groups.every((g) => g.answer !== null))) return fail('Timer still running');
+      if (!(now >= (s.deadline ?? 0) + GRACE_MS || s.groups.every((g) => g.answer !== null))) return fail('Timer still running');
       s.phase = 'answer';
       return OK;
     case 'revealChart': {
       if (!need('answer')) return fail(WRONG_PHASE);
-      const { correct, effects } = EVENTS[s.round];
+      const correct = CORRECT[s.round];
+      const { effects } = EVENTS[s.round];
       for (const g of s.groups) {
         const bonus = g.answer === correct ? (g.bonusAsset ?? 'cash') : null;
         g.holdings = applyRound(g.holdings!, bonus, effects);
@@ -133,7 +135,7 @@ export function hostAction(s: GameState, a: HostAction, now: number): Ack {
 
 export function toPublic(s: GameState, now: number, connected: Set<number>): PublicState {
   const revealed = REVEALED.includes(s.phase);
-  const correct = revealed ? EVENTS[s.round].correct : null;
+  const correct = revealed ? CORRECT[s.round] : null;
   return {
     phase: s.phase, round: s.round, deadline: s.deadline, serverNow: now, correct,
     groups: s.groups.map((g) => ({

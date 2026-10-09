@@ -27,7 +27,7 @@ A multiplayer classroom game that teaches how economic events affect cash, stock
 
 ## 3. Tech stack
 
-- Backend: Node + Express + Socket.IO, TypeScript, run with `tsx` in dev, compiled for prod.
+- Backend: Node 24 + Express + Socket.IO, TypeScript. No compile step: the server runs the `.ts` files directly via Node's native type stripping (dev: `node --watch server/index.ts`; prod: `node server/index.ts`).
 - Frontend: React + TypeScript (Vite), Tailwind CSS v4.
 - DB: Postgres via `pg`. If `DATABASE_URL` is unset, the server runs in-memory (dev convenience).
 - Tests: `node:test` for pure game logic.
@@ -78,7 +78,7 @@ Broadcast payload = `GameState` with tokens stripped, plus `serverNow` (epoch ms
 | 3 | Domestic interest-rate hike | A | −2% | −3% | 0% |
 | 4 | Bond market crisis | B | 0% | 0% | 0% |
 
-Question and option text copied verbatim from the PRD. No explanations.
+Question and option text copied verbatim from the PRD. No explanations. The correct-answer indices live server-only in `server/answers.ts` (never shipped in the client bundle).
 
 ### 4.3 Phase flow and host actions
 
@@ -169,7 +169,8 @@ Host socket sends `hostAuth(pin)`; server marks the socket as host on match. All
 
 ## 8. Deployment
 
-- Render web service: build `npm ci && npm run build`, start `npm start`. Env: `HOST_PIN`, `DATABASE_URL` (Neon), `NODE_ENV=production`.
+- Render web service (runtime Node, Node 24 via `engines`): build `npm ci --include=dev && npm run build` (Vite and Tailwind are devDependencies, which npm would otherwise omit when `NODE_ENV=production`), start `npm start`.
+- Env: `HOST_PIN` (required; long and non-guessable), `DATABASE_URL` (Neon; required in production, otherwise a restart or redeploy wipes the game). Do not set `NODE_ENV` (the server doesn't read it). `PORT` is provided by Render.
 - Free tier sleeps after 15 min idle (~1 min cold start): open the site before class.
 
 ## 9. Out of scope

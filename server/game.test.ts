@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { newGame, join, resume, allocate, answer, chooseBonus, hostAction, toPublic } from './game.ts';
 import type { GameState, HostAction } from '../shared/types.ts';
-import { EVENTS } from '../shared/events.ts';
+import { CORRECT } from './answers.ts';
 import { QUESTION_MS, GRACE_MS } from '../shared/logic.ts';
 
 const host = (s: GameState, type: Exclude<HostAction['type'], 'release'>, now = 0) => hostAction(s, { type }, now);
@@ -87,8 +87,8 @@ test('happy path, 2 groups, 4 events', () => {
     if (r === 0) ok(host(s, 'revealEvent')); // later rounds: 'next' already lands in 'event'
     ok(host(s, 'startTimer', 1000));
     assert.equal(s.deadline, 1000 + QUESTION_MS);
-    ok(answer(s, 'a', EVENTS[r].correct, 2000));
-    ok(host(s, 'revealAnswer', 1000 + QUESTION_MS));
+    ok(answer(s, 'a', CORRECT[r], 2000));
+    ok(host(s, 'revealAnswer', 1000 + QUESTION_MS + GRACE_MS));
     ok(chooseBonus(s, 'a', 'stocks'));
     ok(host(s, 'revealChart'));
     if (r === 0) assert.deepEqual(s.groups[0].holdings, { cash: 300, stocks: 980, bonds: 194 });
@@ -165,6 +165,18 @@ test('revealAnswer waits for timer unless all answered', () => {
   ok(host(s, 'revealAnswer', 5));
 });
 
+test('revealAnswer waits for the answer grace after the deadline', () => {
+  const s = newGame();
+  join(s, 1, 'a');
+  join(s, 2, 'b');
+  host(s, 'start');
+  toQuestion(s, 0);
+  answer(s, 'a', 0, 1);
+  err(host(s, 'revealAnswer', QUESTION_MS), 'Timer still running');
+  err(host(s, 'revealAnswer', QUESTION_MS + GRACE_MS - 1), 'Timer still running');
+  ok(host(s, 'revealAnswer', QUESTION_MS + GRACE_MS));
+});
+
 test('toPublic hides tokens and hides correct during question', () => {
   const s = newGame();
   join(s, 1, 'secret');
@@ -181,7 +193,7 @@ test('toPublic hides tokens and hides correct during question', () => {
   assert.ok(!JSON.stringify(p).includes('secret'));
   host(s, 'revealAnswer', QUESTION_MS);
   p = toPublic(s, 7, new Set());
-  assert.equal(p.correct, EVENTS[0].correct);
+  assert.equal(p.correct, CORRECT[0]);
   assert.equal(p.groups[0].correct, true);
   assert.equal(p.groups[0].connected, false);
 });
