@@ -6,9 +6,11 @@
 
 **Architecture:** Server-authoritative. Express + Socket.IO holds one `GameState`, validates intents via pure functions, persists to Postgres (or memory), broadcasts a sanitised `PublicState` to all sockets. React clients only render and send intents.
 
-**Tech stack:** Node 25, TypeScript, Express 5, Socket.IO 4, `pg`, React 19, Vite 8, Tailwind CSS 4 (`@tailwindcss/vite`), `tsx` (dev, prod runtime and test runner), `node:test`.
+**Tech stack:** Node 25, TypeScript, Express 5, Socket.IO 4, `pg`, React 19, Vite 8, Tailwind CSS 4 (`@tailwindcss/vite`), Node's built-in TypeScript type stripping (`node server/index.ts`, no tsx, no server compile step), `node:test`. No Docker: Render native Node runtime.
 
 **Deviation from spec §4:** pure money/ranking helpers live in `shared/logic.ts` (not `server/game.ts`) because the host UI also needs ranking/podium. `server/game.ts` holds state transitions only. No react-router: two routes, chosen by `location.pathname`.
+
+**Type-stripping rules (apply to ALL `.ts`/`.tsx` files):** relative imports include the extension (`import { EVENTS } from '../shared/events.ts'`); type-only imports use `import type`; no `enum`, `namespace`, or constructor parameter properties (enforced by `erasableSyntaxOnly`).
 
 ---
 
@@ -54,18 +56,18 @@ Server → client: `state` with `PublicState`, emitted to every socket after any
 
 **Files:** `package.json`, `tsconfig.json`, `vite.config.ts`, `index.html`, `.gitignore`, `client/main.tsx` (placeholder), `client/index.css`, `shared/types.ts`, `shared/events.ts`, `shared/logic.ts`, `shared/logic.test.ts`
 
-- [ ] **1.1** `package.json` (`"type": "module"`, `"private": true`, `"engines": {"node": ">=20"}`). Scripts:
+- [ ] **1.1** `package.json` (`"type": "module"`, `"private": true`, `"engines": {"node": ">=22.18"}`). Scripts:
   ```json
   {
-    "dev": "concurrently -k \"tsx watch server/index.ts\" \"vite\"",
+    "dev": "concurrently -k \"node --watch server/index.ts\" \"vite\"",
     "build": "vite build",
-    "start": "tsx server/index.ts",
-    "test": "tsx --test shared/*.test.ts server/*.test.ts",
+    "start": "node server/index.ts",
+    "test": "node --test shared/*.test.ts server/*.test.ts",
     "typecheck": "tsc --noEmit"
   }
   ```
-  Dependencies: `express socket.io pg tsx`. Dev: `typescript @types/express @types/node @types/pg @types/react @types/react-dom react react-dom socket.io-client vite @vitejs/plugin-react tailwindcss @tailwindcss/vite concurrently`. (`tsx` is a runtime dep because `start` uses it; Render installs dev deps during `npm ci` anyway since `NODE_ENV` is only set at runtime — keep `vite`/`tailwind` in devDeps but set Render build to `npm ci --include=dev && npm run build`.) If TypeScript 7 rejects the config, pin `typescript@^5`.
-- [ ] **1.2** `tsconfig.json`: `strict`, `target ES2022`, `module ESNext`, `moduleResolution Bundler`, `jsx react-jsx`, `noEmit`, `allowImportingTsExtensions false`, `skipLibCheck`, include `shared server client`.
+  Dependencies: `express socket.io pg`. Dev: `typescript @types/express @types/node @types/pg @types/react @types/react-dom react react-dom socket.io-client vite @vitejs/plugin-react tailwindcss @tailwindcss/vite concurrently`. (Render build command is `npm ci --include=dev && npm run build` so Vite/Tailwind devDeps are present.) If TypeScript 7 rejects the config, pin `typescript@^5`.
+- [ ] **1.2** `tsconfig.json`: `strict`, `target ES2022`, `module ESNext`, `moduleResolution Bundler`, `jsx react-jsx`, `noEmit`, `allowImportingTsExtensions true`, `verbatimModuleSyntax true`, `erasableSyntaxOnly true`, `skipLibCheck`, include `shared server client`.
 - [ ] **1.3** `vite.config.ts`: plugins `react()`, `tailwindcss()`; `build.outDir: 'dist'`; dev `server.proxy` `'/socket.io': { target: 'http://localhost:3000', ws: true }`. `index.html` at root loads `/client/main.tsx`, title "Market Survival", Google Fonts link for Anton + Space Grotesk (400/700).
 - [ ] **1.4** `client/index.css`:
   ```css
