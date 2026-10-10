@@ -134,8 +134,9 @@ Host socket sends `hostAuth(pin)`; server marks the socket as host on match. All
 - Ranking table: rank label + "Group X" + total ₩. No deltas, no breakdown.
 - Podium at end: top-3 steps, ties share a step.
 
+### 5.2 Group view (`/play`)
 
-
+- Landing page at `/` links to `/play` (groups) and `/host` (facilitator).
 - Join: "What is your group number?" numeric input 1–7, errors for invalid/taken/closed.
 - Then header "Group X" throughout.
 - Allocate: three inputs (step 10) with live total; submit disabled unless total = ₩1,000.
