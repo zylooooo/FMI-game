@@ -39,22 +39,20 @@ const VARIANTS = {
 };
 
 export function Button({
-  variant = 'pink', disabled, onClick, children, type = 'button', className = '',
+  variant = 'pink', disabled, onClick, children, type = 'button', className = '', href,
 }: {
   variant?: keyof typeof VARIANTS; disabled?: boolean; onClick?: () => void; children: ReactNode;
-  type?: 'button' | 'submit'; className?: string;
+  type?: 'button' | 'submit'; className?: string; href?: string;
 }) {
   // Clip-path lives on the inner span so the focus outline on the button isn't clipped away.
-  return (
-    <button
-      type={type} disabled={disabled} onClick={onClick}
-      className={`group cursor-pointer focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white disabled:pointer-events-none disabled:opacity-40 ${className}`}
-    >
-      <span className={`clip-angle block px-6 py-3 font-display text-xl uppercase sm:px-8 sm:py-4 sm:text-2xl tracking-wider transition-colors ${VARIANTS[variant]}`}>
-        {children}
-      </span>
-    </button>
+  const cls = `group cursor-pointer focus-visible:outline-4 focus-visible:outline-offset-4 focus-visible:outline-white disabled:pointer-events-none disabled:opacity-40 ${className}`;
+  const inner = (
+    <span className={`clip-angle block px-6 py-3 font-display text-xl uppercase sm:px-8 sm:py-4 sm:text-2xl tracking-wider transition-colors ${VARIANTS[variant]}`}>
+      {children}
+    </span>
   );
+  if (href) return <a href={href} className={`block text-center ${cls}`}>{inner}</a>;
+  return <button type={type} disabled={disabled} onClick={onClick} className={cls}>{inner}</button>;
 }
 
 /** Pass `now` straight from useGame(); the component ticks itself. */

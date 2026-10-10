@@ -219,7 +219,7 @@ function Stage({ state, now, suspense }: { state: PublicState; now: () => number
           <div className="animate-pop-in">
             <p className="font-display text-6xl uppercase leading-none text-pink sm:text-8xl">Join now</p>
             <p className="mt-4 text-xl sm:text-2xl">
-              Open <span className="wrap-anywhere bg-white px-2 font-bold text-black">{location.origin}</span> and enter your group number.
+              Open <span className="wrap-anywhere bg-white px-2 font-bold text-black">{location.origin}/play</span> and enter your group number.
             </p>
           </div>
           <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3" aria-label="Joined groups">

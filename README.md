@@ -22,8 +22,9 @@ npm run dev
 ```
 
 - Host: http://localhost:5173/host (default dev PIN `1234`)
-- Groups: http://localhost:5173/. To play several groups in one browser, give each tab its own
-  `?slot=N`, e.g. `http://localhost:5173/?slot=1`, `?slot=2`, … (each slot keeps its own group token).
+- Landing: http://localhost:5173/ (links to both views)
+- Groups: http://localhost:5173/play. To play several groups in one browser, give each tab its own
+  `?slot=N`, e.g. `http://localhost:5173/play?slot=1`, `?slot=2`, … (each slot keeps its own group token).
 
 Without `DATABASE_URL`, game state lives in memory and is lost on restart.
 
@@ -59,7 +60,7 @@ Do not set `NODE_ENV`. The server doesn't read it.
    - Start command: `npm start`
    - Instance type: **Free**
 4. Environment: add `HOST_PIN` and `DATABASE_URL`. Don't add `NODE_ENV`.
-5. Deploy. Groups open `https://<your-app>.onrender.com/` and the host opens `https://<your-app>.onrender.com/host`.
+5. Deploy. Groups open `https://<your-app>.onrender.com/play` (or the landing page at `/`) and the host opens `https://<your-app>.onrender.com/host`.
 
 ## Class-day checklist
 
