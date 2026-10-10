@@ -71,7 +71,7 @@ export function Group() {
 function Waiting({ children }: { children: ReactNode }) {
   return (
     <div className="grid min-h-[60vh] place-items-center">
-      <p className="animate-pop-in text-center font-display text-5xl uppercase leading-tight tracking-wide">{children}</p>
+      <p className="animate-pop-in text-center font-display text-3xl uppercase leading-tight tracking-wide sm:text-5xl">{children}</p>
     </div>
   );
 }
@@ -94,19 +94,19 @@ function Join({ emit, onJoined }: { emit: Emit; onJoined: (n: number) => void })
   }
 
   return (
-    <form onSubmit={submit} noValidate className="mx-auto mt-[8vh] flex max-w-xl flex-col items-center gap-8">
+    <form onSubmit={submit} noValidate className="mx-auto mt-[4vh] flex max-w-xl flex-col items-center gap-6 sm:mt-[8vh] sm:gap-8">
       <div aria-hidden className="stripes h-4 w-full" />
-      <label htmlFor="group-number" className="text-center font-display text-6xl uppercase leading-tight">
+      <label htmlFor="group-number" className="text-center font-display text-4xl uppercase leading-tight sm:text-6xl">
         What is your group number?
       </label>
       <input
         id="group-number" type="number" min={1} max={7} step={1} inputMode="numeric" autoFocus required
         value={value} onChange={(e) => { setValue(e.target.value); setError(null); }}
         aria-invalid={!!error} aria-describedby={error ? 'join-error' : undefined}
-        className="clip-hex h-36 w-56 bg-white text-center font-display text-8xl text-black outline-none focus-visible:bg-pink-light focus-visible:text-white"
+        className="clip-hex h-28 w-44 bg-white text-center font-display text-7xl sm:h-36 sm:w-56 sm:text-8xl text-black outline-none focus-visible:bg-pink-light focus-visible:text-white"
       />
       <p id="join-error" role="alert" className="min-h-8 text-xl font-bold text-pink-light">{error}</p>
-      <Button type="submit" disabled={busy} className="w-64">Join</Button>
+      <Button type="submit" disabled={busy} className="w-full max-w-64">Join</Button>
     </form>
   );
 }
@@ -123,10 +123,10 @@ function Stage({ state, me, now, emit, say }: { state: PublicState; me: PublicGr
         <div className="grid min-h-[60vh] place-items-center">
           <div className="animate-pop-in flex w-full max-w-5xl flex-col items-center gap-6">
             <div aria-hidden className="stripes h-5 w-full" />
-            <p className="font-display text-4xl uppercase tracking-[0.3em] text-pink">Event {state.round + 1}</p>
-            <h2 className="text-center font-display text-8xl uppercase leading-none">{ev.title}</h2>
+            <p className="font-display text-2xl uppercase tracking-[0.3em] text-pink sm:text-4xl">Event {state.round + 1}</p>
+            <h2 className="break-words text-center font-display text-5xl uppercase leading-none sm:text-8xl">{ev.title}</h2>
             <div aria-hidden className="stripes h-5 w-full" />
-            <p className="text-xl text-white/60">Get ready — the question is coming…</p>
+            <p className="text-center text-lg text-white/60 sm:text-xl">Get ready — the question is coming…</p>
           </div>
         </div>
       );
@@ -138,7 +138,7 @@ function Stage({ state, me, now, emit, say }: { state: PublicState; me: PublicGr
       return (
         <div className="grid gap-10 lg:grid-cols-[3fr_2fr]">
           <section aria-label="Market move">
-            <h2 className="mb-6 font-display text-4xl uppercase">{ev.title}: the market moves</h2>
+            <h2 className="mb-6 font-display text-2xl uppercase sm:text-4xl">{ev.title}: the market moves</h2>
             <EffectChart effects={ev.effects} />
           </section>
           <Portfolio h={me.holdings} heading="Your portfolio" />
@@ -147,11 +147,11 @@ function Stage({ state, me, now, emit, say }: { state: PublicState; me: PublicGr
     case 'podium': {
       const rows = rank(state.groups.filter((g) => g.holdings).map((g) => ({ number: g.number, total: total(g.holdings!) })));
       return (
-        <div className="flex flex-col items-center gap-12">
-          <h2 className="font-display text-6xl uppercase">Final standings</h2>
+        <div className="flex flex-col items-center gap-8 sm:gap-12">
+          <h2 className="text-center font-display text-4xl uppercase sm:text-6xl">Final standings</h2>
           <div className="w-full"><Podium rows={podium(rows)} /></div>
           {me.holdings && (
-            <p className="animate-pop-in text-center font-display text-5xl uppercase" style={{ animationDelay: '1800ms' }}>
+            <p className="animate-pop-in text-center font-display text-3xl uppercase sm:text-5xl" style={{ animationDelay: '1800ms' }}>
               Your final value: <span className="text-teal">{won(total(me.holdings))}</span>
             </p>
           )}
@@ -165,16 +165,16 @@ function Portfolio({ h, heading }: { h: Holdings | null; heading: string }) {
   if (!h) return null;
   return (
     <section aria-label={heading} className="flex flex-col gap-3">
-      <h2 className="font-display text-4xl uppercase">{heading}</h2>
+      <h2 className="font-display text-3xl uppercase sm:text-4xl">{heading}</h2>
       {ASSETS.map((a) => (
-        <div key={a} className="clip-angle flex items-center justify-between bg-white/5 px-6 py-4">
-          <span className="font-display text-3xl uppercase tracking-wider">{LABEL[a]}</span>
-          <span className="font-display text-3xl tabular-nums">{won(h[a])}</span>
+        <div key={a} className="clip-angle flex items-center justify-between bg-white/5 px-4 py-3 sm:px-6 sm:py-4">
+          <span className="font-display text-2xl uppercase tracking-wider sm:text-3xl">{LABEL[a]}</span>
+          <span className="font-display text-2xl tabular-nums sm:text-3xl">{won(h[a])}</span>
         </div>
       ))}
-      <div className="clip-angle mt-2 flex items-center justify-between bg-teal px-6 py-5 text-black">
-        <span className="font-display text-3xl uppercase tracking-wider">Total</span>
-        <span className="font-display text-6xl tabular-nums">{won(total(h))}</span>
+      <div className="clip-angle mt-2 flex items-center justify-between bg-teal px-4 py-4 text-black sm:px-6 sm:py-5">
+        <span className="font-display text-2xl uppercase tracking-wider sm:text-3xl">Total</span>
+        <span className="font-display text-4xl tabular-nums sm:text-6xl">{won(total(h))}</span>
       </div>
     </section>
   );
@@ -191,7 +191,7 @@ function Allocate({ me, emit, say }: { me: PublicGroup; emit: Emit; say: Say }) 
     return (
       <div className="mx-auto flex max-w-2xl flex-col gap-8">
         <Portfolio h={me.holdings} heading="Portfolio locked" />
-        <p className="text-xl text-white/60">Waiting for Event 1. You can still change it until then.</p>
+        <p className="text-lg text-white/60 sm:text-xl">Waiting for Event 1. You can still change it until then.</p>
         <Button variant="ghost" className="self-start" onClick={() => { setDraft(me.holdings!); setEditing(true); }}>Edit</Button>
       </div>
     );
@@ -213,32 +213,32 @@ function Allocate({ me, emit, say }: { me: PublicGroup; emit: Emit; say: Say }) 
   return (
     <form onSubmit={(e) => { e.preventDefault(); if (!bad) lock(); }} className="mx-auto flex max-w-4xl flex-col gap-6">
       <div>
-        <h2 className="font-display text-5xl uppercase">Invest your {won(START)}</h2>
-        <p className="mt-2 text-xl text-white/60">Split it across three assets in steps of {won(STEP)}. {won(0)} is allowed.</p>
+        <h2 className="font-display text-3xl uppercase sm:text-5xl">Invest your {won(START)}</h2>
+        <p className="mt-2 text-white/60 sm:text-xl">Split it across three assets in steps of {won(STEP)}. {won(0)} is allowed.</p>
       </div>
       {ASSETS.map((a) => (
-        <div key={a} className="flex items-center gap-4 bg-white/5 px-6 py-4">
-          <label htmlFor={`alloc-${a}`} className="w-36 font-display text-4xl uppercase">{LABEL[a]}</label>
+        <div key={a} className="grid grid-cols-4 items-center gap-2 bg-white/5 px-4 py-3 sm:flex sm:gap-4 sm:px-6 sm:py-4">
+          <label htmlFor={`alloc-${a}`} className="col-span-2 font-display text-3xl uppercase max-sm:order-first sm:w-36 sm:text-4xl">{LABEL[a]}</label>
           <Nudge label={`Remove ${won(100)} from ${LABEL[a]}`} onClick={() => set(a, draft[a] - 100)}>−100</Nudge>
           <Nudge label={`Remove ${won(10)} from ${LABEL[a]}`} onClick={() => set(a, draft[a] - 10)}>−10</Nudge>
-          <div className="flex items-center gap-1 font-display text-4xl">
+          <div className="col-span-2 flex items-center justify-end gap-1 font-display text-3xl max-sm:-order-1 sm:text-4xl">
             <span aria-hidden>₩</span>
             <input
               id={`alloc-${a}`} type="number" min={0} max={START} step={STEP} inputMode="numeric"
               value={draft[a]} onFocus={(e) => e.target.select()} onChange={(e) => set(a, Math.floor(Number(e.target.value)))}
-              className="w-40 border-b-4 border-white/30 bg-transparent text-right tabular-nums outline-none focus-visible:border-pink"
+              className="w-28 border-b-4 py-1 sm:w-40 border-white/30 bg-transparent text-right tabular-nums outline-none focus-visible:border-pink"
             />
           </div>
           <Nudge label={`Add ${won(10)} to ${LABEL[a]}`} onClick={() => set(a, draft[a] + 10)}>+10</Nudge>
           <Nudge label={`Add ${won(100)} to ${LABEL[a]}`} onClick={() => set(a, draft[a] + 100)}>+100</Nudge>
         </div>
       ))}
-      <div className="flex items-center justify-between gap-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
         <div aria-live="polite">
-          <p className={`font-display text-5xl tabular-nums ${bad ? 'text-pink' : 'text-teal'}`}>{won(sum)} / {won(START)}</p>
+          <p className={`font-display text-4xl sm:text-5xl tabular-nums ${bad ? 'text-pink' : 'text-teal'}`}>{won(sum)} / {won(START)}</p>
           <p className="min-h-7 text-lg text-white/60">{hint}</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           {me.holdings && <Button variant="ghost" onClick={() => setEditing(false)}>Cancel</Button>}
           <Button type="submit" variant="teal" disabled={!!bad || busy}>Lock portfolio</Button>
         </div>
@@ -251,7 +251,7 @@ function Nudge({ label, onClick, children }: { label: string; onClick: () => voi
   return (
     <button
       type="button" aria-label={label} onClick={onClick}
-      className="clip-hex h-14 w-20 cursor-pointer bg-white/10 font-display text-xl tabular-nums hover:bg-pink focus-visible:bg-pink focus-visible:outline-none"
+      className="clip-hex h-12 w-full cursor-pointer bg-white/10 font-display text-lg sm:h-14 sm:w-20 sm:text-xl tabular-nums hover:bg-pink focus-visible:bg-pink focus-visible:outline-none"
     >
       {children}
     </button>
@@ -262,11 +262,11 @@ function Options({ options, pick, selected, onSelect, className }: {
   options: string[]; pick: number | null; selected?: number | null; onSelect?: (i: number) => void; className: (i: number) => string;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-4" role="group" aria-label="Options">
+    <div className="grid gap-3 sm:grid-cols-2 sm:gap-4" role="group" aria-label="Options">
       {options.map((o, i) => (
         <button
           key={i} type="button" disabled={!onSelect} onClick={() => onSelect?.(i)} aria-pressed={onSelect ? selected === i : undefined}
-          className={`clip-angle relative flex min-h-28 cursor-pointer items-center gap-4 px-5 py-4 text-left text-lg transition-[opacity,background-color] duration-500 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white disabled:cursor-default ${className(i)}`}
+          className={`clip-angle relative flex min-h-20 cursor-pointer items-center gap-4 px-4 py-4 text-left sm:min-h-28 sm:px-5 sm:text-lg transition-[opacity,background-color] duration-500 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white disabled:cursor-default ${pick === i ? 'max-sm:pt-8' : ''} ${className(i)}`}
         >
           <span className="clip-hex grid h-12 w-14 shrink-0 place-items-center bg-black font-display text-2xl text-white">{LETTERS[i]}</span>
           <span>{o}</span>
@@ -296,23 +296,23 @@ function Question({ state, me, now, emit, say }: { state: PublicState; me: Publi
   }
 
   const status = me.answered
-    ? <p className="font-display text-4xl uppercase text-teal">Locked in{pick !== null ? `: ${LETTERS[pick]}` : ''} — waiting…</p>
+    ? <p className="font-display text-2xl uppercase text-teal sm:text-4xl">Locked in{pick !== null ? `: ${LETTERS[pick]}` : ''} — waiting…</p>
     : timeUp
-      ? <p className="font-display text-4xl uppercase text-pink">Time's up — no answer</p>
+      ? <p className="font-display text-2xl uppercase text-pink sm:text-4xl">Time's up — no answer</p>
       : <Button variant="teal" disabled={selected === null || busy} onClick={lockIn}>Lock in{selected !== null ? ` ${LETTERS[selected]}` : ''}</Button>;
 
   return (
-    <div className="grid items-start gap-10 lg:grid-cols-[1fr_auto]">
+    <div className="grid items-start gap-6 lg:grid-cols-[1fr_auto] lg:gap-10">
       <div className="flex flex-col gap-6">
-        <p className="font-display text-2xl uppercase tracking-[0.3em] text-pink">Event {state.round + 1}: {ev.title}</p>
-        <h2 className="text-3xl font-bold leading-snug">{ev.question}</h2>
+        <p className="font-display text-lg uppercase tracking-[0.2em] text-pink sm:text-2xl sm:tracking-[0.3em]">Event {state.round + 1}: {ev.title}</p>
+        <h2 className="text-xl font-bold leading-snug sm:text-3xl">{ev.question}</h2>
         <Options
           options={ev.options} pick={pick} selected={selected} onSelect={open ? setSelected : undefined}
           className={(i) => (pick === i || (open && selected === i) ? 'bg-pink text-white' : `bg-white/10 ${open ? 'hover:bg-white/20' : 'opacity-40'}`)}
         />
         <div aria-live="polite" className="min-h-20">{status}</div>
       </div>
-      {state.deadline !== null && <Countdown deadline={state.deadline} now={now} />}
+      {state.deadline !== null && <div className="justify-self-center max-lg:order-first"><Countdown deadline={state.deadline} now={now} /></div>}
     </div>
   );
 }
@@ -334,8 +334,8 @@ function Reveal({ state, me, emit, say }: { state: PublicState; me: PublicGroup;
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <p className="font-display text-2xl uppercase tracking-[0.3em] text-pink">Event {state.round + 1}: {ev.title}</p>
-        <h2 className="mt-2 text-2xl font-bold leading-snug text-white/80">{ev.question}</h2>
+        <p className="font-display text-lg uppercase tracking-[0.2em] text-pink sm:text-2xl sm:tracking-[0.3em]">Event {state.round + 1}: {ev.title}</p>
+        <h2 className="mt-2 text-xl sm:text-2xl font-bold leading-snug text-white/80">{ev.question}</h2>
       </div>
       <Options
         options={ev.options} pick={pick}
@@ -344,21 +344,21 @@ function Reveal({ state, me, emit, say }: { state: PublicState; me: PublicGroup;
       />
       <div aria-live="polite" className="min-h-40">
         {!shown ? (
-          <p className="animate-flicker font-display text-5xl uppercase tracking-widest">
+          <p className="animate-flicker font-display text-3xl uppercase tracking-widest sm:text-5xl">
             {me.answered ? 'The answer is…' : "Time's up — no answer"}
           </p>
         ) : me.correct ? (
           <div className="animate-pop-in flex flex-col gap-6">
-            <p className="font-display text-8xl uppercase text-teal">Correct +{won(BONUS)}</p>
+            <p className="font-display text-5xl uppercase text-teal sm:text-8xl">Correct +{won(BONUS)}</p>
             <div className="flex flex-col gap-4">
-              <p className="text-xl font-bold">All {won(BONUS)} goes into one asset. You can change it until the chart is revealed (no choice = Cash).</p>
-              <div className="grid grid-cols-3 gap-4" role="group" aria-label={`Where should your ${won(BONUS)} go?`}>
+              <p className="font-bold sm:text-xl">All {won(BONUS)} goes into one asset. You can change it until the chart is revealed (no choice = Cash).</p>
+              <div className="grid gap-3 sm:grid-cols-3 sm:gap-4" role="group" aria-label={`Where should your ${won(BONUS)} go?`}>
                 {ASSETS.map((a) => {
                   const on = me.bonusAsset === a;
                   return (
                     <button
                       key={a} type="button" aria-pressed={on} onClick={() => choose(a)}
-                      className={`clip-angle cursor-pointer px-6 py-8 font-display text-4xl uppercase transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white ${on ? 'bg-teal text-black' : 'bg-white/10 hover:bg-white/20'}`}
+                      className={`clip-angle cursor-pointer px-4 py-4 font-display text-2xl uppercase sm:px-6 sm:py-8 sm:text-4xl transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white ${on ? 'bg-teal text-black' : 'bg-white/10 hover:bg-white/20'}`}
                     >
                       Put {won(BONUS)} into {LABEL[a]}
                       {on && <span className="mt-2 block font-body text-base font-bold tracking-widest">✓ Selected</span>}
@@ -370,9 +370,9 @@ function Reveal({ state, me, emit, say }: { state: PublicState; me: PublicGroup;
           </div>
         ) : (
           <div className="animate-pop-in flex items-center gap-6">
-            <div aria-hidden className="stripes h-16 w-24" />
+            <div aria-hidden className="stripes h-12 w-16 shrink-0 sm:h-16 sm:w-24" />
             <div>
-              <p className="font-display text-9xl uppercase text-pink">Wrong</p>
+              <p className="font-display text-7xl uppercase text-pink sm:text-9xl">Wrong</p>
               {!me.answered && <p className="text-xl font-bold text-white/60">Time's up — no answer</p>}
             </div>
           </div>

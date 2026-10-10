@@ -160,13 +160,13 @@ export function Host() {
   return (
     <Shell title="Market Survival" right={bar}>
       <Banner connected={connected} />
-      <div className="flex gap-8">
+      <div className="flex flex-col gap-8 lg:flex-row">
         <section className="min-w-0 flex-1" key={`${phase}-${round}`} aria-label="Stage">
           <Stage state={state} now={now} suspense={suspense} />
         </section>
-        <aside className="w-64 shrink-0" aria-label="Groups">
+        <aside className="shrink-0 lg:w-64" aria-label="Groups">
           <h2 className="mb-3 font-display text-xl uppercase tracking-widest text-white/60">Groups {n}/6</h2>
-          <ul className="flex flex-col gap-2">
+          <ul className="grid gap-2 sm:grid-cols-2 lg:flex lg:flex-col">
             {groups.map((g) => (
               <Chip key={g.number} g={g} phase={phase} suspense={suspense} onRelease={() => release(g.number)} />
             ))}
@@ -217,14 +217,14 @@ function Stage({ state, now, suspense }: { state: PublicState; now: () => number
       return (
         <div className="flex flex-col gap-10">
           <div className="animate-pop-in">
-            <p className="font-display text-8xl uppercase leading-none text-pink">Join now</p>
-            <p className="mt-4 text-2xl">
-              Open <span className="bg-white px-2 font-bold text-black">{location.origin}</span> and enter your group number.
+            <p className="font-display text-6xl uppercase leading-none text-pink sm:text-8xl">Join now</p>
+            <p className="mt-4 text-xl sm:text-2xl">
+              Open <span className="wrap-anywhere bg-white px-2 font-bold text-black">{location.origin}</span> and enter your group number.
             </p>
           </div>
-          <ul className="grid grid-cols-3 gap-4" aria-label="Joined groups">
+          <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3" aria-label="Joined groups">
             {groups.map((g) => (
-              <li key={g.number} className="animate-pop-in clip-hex grid h-32 place-items-center bg-teal-dark font-display text-4xl uppercase">
+              <li key={g.number} className="animate-pop-in clip-hex grid h-24 place-items-center bg-teal-dark font-display text-2xl uppercase sm:h-32 sm:text-4xl">
                 Group {g.number}
               </li>
             ))}
@@ -235,12 +235,12 @@ function Stage({ state, now, suspense }: { state: PublicState; now: () => number
     case 'allocating':
       return (
         <div className="flex flex-col gap-10">
-          <p className="animate-pop-in font-display text-6xl uppercase leading-tight">
+          <p className="animate-pop-in font-display text-4xl uppercase leading-tight sm:text-6xl">
             Groups are building<br /><span className="text-pink">their portfolios</span>
           </p>
-          <ul className="grid grid-cols-3 gap-4">
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {groups.map((g) => (
-              <li key={g.number} className={`clip-angle flex items-center justify-between px-6 py-5 font-display text-3xl uppercase ${g.holdings ? 'animate-pop-in bg-teal text-black' : 'bg-white/5 text-white/60'}`}>
+              <li key={g.number} className={`clip-angle flex items-center justify-between px-6 py-5 font-display text-2xl sm:text-3xl uppercase ${g.holdings ? 'animate-pop-in bg-teal text-black' : 'bg-white/5 text-white/60'}`}>
                 Group {g.number}
                 <span aria-label={g.holdings ? 'allocated' : 'not yet allocated'}>{g.holdings ? '✓' : '…'}</span>
               </li>
@@ -252,22 +252,22 @@ function Stage({ state, now, suspense }: { state: PublicState; now: () => number
       return (
         <div className="flex min-h-[60vh] flex-col justify-center gap-6 overflow-hidden">
           <div aria-hidden className="stripes animate-sweep h-6" />
-          <p className="animate-pop-in font-display text-[10rem] uppercase leading-none text-pink" style={{ animationDelay: '300ms' }}>
+          <p className="animate-pop-in font-display text-7xl uppercase leading-none text-pink sm:text-9xl lg:text-[10rem]" style={{ animationDelay: '300ms' }}>
             Event {round + 1}
           </p>
-          <p className="animate-pop-in font-display text-6xl uppercase leading-tight" style={{ animationDelay: '700ms' }}>{ev.title}</p>
+          <p className="animate-pop-in font-display text-4xl uppercase leading-tight sm:text-6xl" style={{ animationDelay: '700ms' }}>{ev.title}</p>
           <div aria-hidden className="-scale-x-100"><div className="stripes animate-sweep h-6" /></div>
         </div>
       );
     case 'question':
       return (
         <div className="flex flex-col gap-6">
-          <p className="animate-pop-in text-3xl font-bold leading-snug">{ev.question}</p>
-          <div className="flex items-start gap-8">
+          <p className="animate-pop-in text-xl font-bold leading-snug sm:text-3xl">{ev.question}</p>
+          <div className="flex flex-col-reverse items-center gap-6 lg:flex-row lg:items-start lg:gap-8">
             <Options options={ev.options} />
             <div className="flex shrink-0 flex-col items-center gap-3">
               <Countdown deadline={state.deadline ?? 0} now={now} />
-              <span className="font-display text-3xl uppercase" aria-live="polite">
+              <span className="font-display text-2xl uppercase sm:text-3xl" aria-live="polite">
                 {groups.filter((g) => g.answered).length}/{groups.length} locked in
               </span>
             </div>
@@ -278,7 +278,7 @@ function Stage({ state, now, suspense }: { state: PublicState; now: () => number
       const winners = groups.filter((g) => g.correct);
       return (
         <div className="flex flex-col gap-6">
-          <p className="text-3xl font-bold leading-snug">{ev.question}</p>
+          <p className="text-xl font-bold leading-snug sm:text-3xl">{ev.question}</p>
           <Options options={ev.options} correct={state.correct} suspense={suspense} />
           <div aria-live="polite">
             {suspense ? (
@@ -297,7 +297,7 @@ function Stage({ state, now, suspense }: { state: PublicState; now: () => number
     }
     case 'results':
       return (
-        <div className="grid grid-cols-2 gap-10">
+        <div className="grid gap-10 lg:grid-cols-2">
           <div>
             <h2 className="mb-4 font-display text-3xl uppercase">Event {round + 1}: <span className="text-pink">{ev.title}</span></h2>
             <EffectChart effects={ev.effects} />
@@ -311,7 +311,7 @@ function Stage({ state, now, suspense }: { state: PublicState; now: () => number
     case 'podium':
       return (
         <div className="flex flex-col items-center gap-10">
-          <p className="animate-pop-in font-display text-7xl uppercase text-pink">Survivors</p>
+          <p className="animate-pop-in font-display text-5xl uppercase text-pink sm:text-7xl">Survivors</p>
           <div className="w-full"><Podium rows={podium(ranked(groups))} /></div>
         </div>
       );
@@ -322,7 +322,7 @@ function Stage({ state, now, suspense }: { state: PublicState; now: () => number
 function Options({ options, correct = null, suspense = false }: { options: string[]; correct?: number | null; suspense?: boolean }) {
   const revealed = correct !== null && !suspense;
   return (
-    <ol className="grid flex-1 grid-cols-2 gap-4">
+    <ol className="grid w-full flex-1 gap-3 sm:grid-cols-2 sm:gap-4">
       {options.map((o, i) => {
         const right = revealed && i === correct;
         const wrong = revealed && i !== correct;
@@ -337,7 +337,7 @@ function Options({ options, correct = null, suspense = false }: { options: strin
             <span className={`clip-hex grid h-12 w-14 shrink-0 place-items-center font-display text-2xl ${right ? 'bg-black text-teal' : 'bg-pink text-white'}`}>
               {LETTERS[i]}
             </span>
-            <span className="text-xl font-bold leading-snug">{o}</span>
+            <span className="font-bold leading-snug sm:text-xl">{o}</span>
             {right && <span className="sr-only">(correct answer)</span>}
           </li>
         );
